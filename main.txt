@@ -1,0 +1,72 @@
+int main()
+{
+try
+{
+setlocale(LC_ALL, ".1251");
+string type, file_in_name, file_out_name;
+cout << "Введите режим работы программы: \ncalc -
+вычисление CRC кода \ncheck - проверка кода" << endl;
+cin >> type;
+if (type != "calc" && type != "check")
+throw 'p';
+cout << "Введите путь к проверяемому файлу" << endl;
+cin >> file_in_name;
+ifstream file_in(file_in_name, fstream::binary);
+if (!file_in)
+throw 'i';
+CRC_32 cr32(file_in);
+if (type == "calc")
+{
+cout << "Введите путь к файлу записи CRC кода" <<
+endl;
+cin >> file_out_name;
+ofstream file_crc32;
+file_crc32.open(file_out_name, ios_base::out |
+ios_base::trunc | ios_base::binary);
+file_crc32 << hex << cr32.get() << endl;
+cout << "Кодирование завершено" << endl;
+return 0;
+}
+if (type == "check")
+{
+uint32_t c;
+cout << "Введите путь к файлу с CRC кодом" << endl;
+cin >> file_out_name;
+ifstream file_crc32;
+file_crc32.open(file_out_name, ios_base::in |
+ios_base::binary);
+if (!file_crc32)
+{
+throw 'c';
+}
+file_crc32 >> hex >> c;
+if (cr32.check(c))
+cout << "CRC32 код верен" << endl;
+else
+cout << "CRC32 код не верен" << endl;
+return 0;
+}
+}
+catch (char err_code)
+{
+switch (err_code)
+{
+case 'i':
+{
+cerr << "Не удалось прочитать проверяемый файл" <<
+endl;
+return 1;
+}
+case 'c':
+{
+cerr << "Не удалось прочитать CRC32 код" << endl;
+return 1;
+}
+case 'p':
+{
+cerr << "Неправильные параметры" << endl;
+return 1;
+}
+}
+}
+}

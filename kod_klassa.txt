@@ -1,0 +1,106 @@
+ Класс CRC_32
+/*!
+Файл CRC_32.h был использован для описания класса CERC_32
+*/
+#pragma once
+#include <fstream>
+/*!
+\brief Класс CRC_32
+Данный класс был использован для создания crc-кода и его
+последущей записи/проверки
+*/
+class CRC_32 {
+private:
+/*!
+\brief Переменная __crc32
+Переменная была использована для хранения расчитанного crc-
+кода
+*/
+uint32_t __crc32;
+/*!
+\brief Функция get_length
+Данная функция была использвана для вычисления размера
+входного файла
+Входной параметр:
+std::ifstream& fin - исходный файл
+\code
+size_t CRC_32::get_length(ifstream& fin)
+{
+fin.seekg(0, fin.end);
+size_t len = fin.tellg();
+fin.seekg(0, fin.beg);
+return len;
+}
+\endcode
+*/
+size_t get_length(std::ifstream& fin);
+/*!
+\brief Функция calc
+Данная функция была использвана для вычисления crc-кода
+Входные параметры:
+uint8_t* buf - данные входного файла
+size_t len - размер входного файла
+\code
+uint32_t CRC_32::calc(uint8_t* buf, size_t len)
+{
+uint32_t crc_table[256];
+uint32_t crc;
+for (int i = 0; i < 256; i++)
+{
+crc = i;
+for (int j = 0; j < 8; j++)
+crc = crc & 1 ? (crc >> 1) ^ 0x1EDC6F41UL : crc
+>> 1;
+crc_table[i] = crc;
+};
+crc = 0xFFFFFFFFUL;
+while (len--)
+crc = crc_table[(crc ^ *buf++) & 0xFF] ^ (crc >> 8);
+return crc ^ 0xFFFFFFFFUL;
+}
+\endcode
+*/
+uint32_t calc(uint8_t* buf, size_t len);
+public:
+/*!
+\brief Конструктор для экземпляра класса
+Данный конструктор вычисляет контрольную сумму при создании
+экземпляра класса
+*/
+CRC_32(std::ifstream& fin)
+{
+size_t sz = get_length(fin);
+uint8_t* data = new uint8_t[sz];
+fin.read((char*)data, sz);
+__crc32 = calc(data, sz);
+delete[] data;
+}
+/*!
+\brief Функция check
+Данная функция была использвана для проверки crc-кода
+Входной параметр:
+uint32_t crc32 - считанный crc-код
+\code
+bool CRC_32::check(uint32_t crc32)
+{
+if (__crc32 == crc32)
+return true;
+else
+return false;
+}
+\endcode
+*/
+bool check(uint32_t crc32);
+/*!
+\brief Функция get
+Данная функция была использвана для того, чтобы вернуть
+расчитанный crc-код
+\code
+uint32_t CRC_32::get()
+{
+return __crc32;
+}
+\endcode
+*/
+uint32_t get();
+};

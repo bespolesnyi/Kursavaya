@@ -1,0 +1,41 @@
+/*!
+Файл CRC_32.cpp был использован для хранения реализации функций
+класса CRC_32
+*/
+#include "CRC_32.h"
+using namespace std;
+size_t CRC_32::get_length(ifstream& fin)
+{
+fin.seekg(0, fin.end);
+size_t len = fin.tellg();
+fin.seekg(0, fin.beg);
+return len;
+}
+uint32_t CRC_32::calc(uint8_t* buf, size_t len)
+{
+uint32_t crc_table[256];
+uint32_t crc;
+for (int i = 0; i < 256; i++)
+{
+crc = i;
+for (int j = 0; j < 8; j++)
+crc = crc & 1 ? (crc >> 1) ^ 0x1EDC6F41UL : crc >>
+1;
+crc_table[i] = crc;
+};
+crc = 0xFFFFFFFFUL;
+while (len--)
+crc = crc_table[(crc ^ *buf++) & 0xFF] ^ (crc >> 8);
+return crc ^ 0xFFFFFFFFUL;
+}
+bool CRC_32::check(uint32_t crc32)
+{
+if (__crc32 == crc32)
+return true;
+else
+return false;
+}
+uint32_t CRC_32::get()
+{
+return __crc32;
+}
